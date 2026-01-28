@@ -1,0 +1,11 @@
+{
+  "version": 2,
+  "dgSpecHash": "sOLe+6UZrE4=",
+  "success": true,
+  "projectFilePath": "C:\\Users\\Артём\\Desktop\\у проєкті DistributedApp.API\\DistributedPlatform.API\\DistributedPlatform.API.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\Артём\\.nuget\\packages\\microsoft.aspnetcore.openapi\\9.0.11\\microsoft.aspnetcore.openapi.9.0.11.nupkg.sha512",
+    "C:\\Users\\Артём\\.nuget\\packages\\microsoft.openapi\\1.6.17\\microsoft.openapi.1.6.17.nupkg.sha512"
+  ],
+  "logs": []
+}

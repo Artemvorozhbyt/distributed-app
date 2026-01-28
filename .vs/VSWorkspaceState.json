@@ -1,0 +1,10 @@
+{
+  "ExpandedNodes": [
+    "",
+    "\\distributed-app",
+    "\\distributed-app\\DistributedApp.API",
+    "\\distributed-app\\DistributedApp.API\\Data"
+  ],
+  "SelectedNode": "\\distributed-app\\DistributedApp.API\\Program.cs",
+  "PreviewInSolutionExplorer": false
+}
