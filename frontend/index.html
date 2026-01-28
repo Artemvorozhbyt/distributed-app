@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>Menadżer Zadań - Aplikacja Rozproszona</title>
+    <style>
+        body {
+            font-family: Arial;
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+        }
+
+        .zadanie {
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+
+        .ukonczone {
+            background-color: #e8f5e9;
+        }
+
+        input, textarea {
+            width: 100%;
+            margin: 8px 0;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            cursor: pointer;
+            border: none;
+            border-radius: 4px;
+        }
+
+        .dodaj {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        .usun {
+            background-color: #f44336;
+            color: white;
+        }
+
+        .zmien-status {
+            background-color: #2196F3;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <h1>📋 Menadżer Zadań</h1>
+
+    <!-- Formularz dodawania -->
+    <div>
+        <h2>Dodaj nowe zadanie</h2>
+        <input type="text" id="tytul" placeholder="Tytuł zadania" required>
+        <textarea id="opis" placeholder="Opis zadania" rows="3"></textarea>
+        <button class="dodaj" onclick="dodajZadanie()">➕ Dodaj zadanie</button>
+    </div>
+
+    <!-- Lista zadań -->
+    <div id="lista-zadan"></div>
+
+    <script>
+        const API_URL = 'http://localhost:5173/api/tasks';
+
+        // Załaduj zadania przy otwarciu strony
+        document.addEventListener('DOMContentLoaded', zaladujZadania);
+
+        // Pobierz wszystkie zadania
+        async function zaladujZadania() {
+            try {
+                const odpowiedz = await fetch(API_URL);
+                const zadania = await odpowiedz.json();
+                wyswietlZadania(zadania);
+            } catch (error) {
+                console.error('Błąd ładowania zadań:', error);
+            }
+        }
+
+        // Wyświetl zadania
+        function wyswietlZadania(zadania) {
+            const kontener = document.getElementById('lista-zadan');
+            kontener.innerHTML = '<h2>Lista zadań</h2>';
+
+            if (zadania.length === 0) {
+                kontener.innerHTML += '<p>Brak zadań. Dodaj pierwsze!</p>';
+                return;
+            }
+
+            zadania.forEach(zadanie => {
+                const div = document.createElement('div');
+                div.className = zadanie ${zadanie.isCompleted ? 'ukonczone' : ''};
+                div.innerHTML = `
+                    <h3>${zadanie.title} ${zadanie.isCompleted ? '✅' : '⏳'}</h3>
+                    <p>${zadanie.description || '(brak opisu)'}</p>
+                    <p><small>Utworzono: ${new Date(zadanie.createdAt).toLocaleString('pl-PL')}</small></p>
+                    <div>
+                        <button class="zmien-status" onclick="zmienStatus(${zadanie.id}, ${!zadanie.isCompleted})">
+                            ${zadanie.isCompleted ? '🔁 Wznów' : '✅ Zakończ'}
+                        </button>
+                        <button class="usun" onclick="usunZadanie(${zadanie.id})">🗑️ Usuń</button>
+                    </div>
+                `;
+                kontener.appendChild(div);
+            });
+        }
+
+        // Dodaj nowe zadanie
+        async function dodajZadanie() {
+            const tytul = document.getElementById('tytul').value;
+            const opis = document.getElementById('opis').value;
+
+            if (!tytul) {
+                alert('Podaj tytuł zadania!');
+                return;
+            }
+
+            const noweZadanie = {
+                title: tytul,
+                description: opis,
+                isCompleted: false
+            };
+
+            try {
+                await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(noweZadanie)
+                });
+
+                // Wyczyść formularz i odśwież listę
+                document.getElementById('tytul').value = '';
+                document.getElementById('opis').value = '';
+                zaladujZadania();
+                } catch (error) {
+                console.error('Błąd dodawania zadania:', error);
+            }
+        }
+
+        // Zmień status zadania (zakończ/wznów)
+        async function zmienStatus(id, nowyStatus) {
+            try {
+                // Najpierw pobierz aktualne zadanie
+                const odpowiedz = await fetch(`${API_URL}/${id}`);
+                const zadanie = await odpowiedz.json();
+
+                // Zaktualizuj status
+                zadanie.isCompleted = nowyStatus;
+                zadanie.updatedAt = new Date().toISOString();
+
+                // Wyślij aktualizację
+                await fetch(`${API_URL}/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(zadanie)
+                });
+
+                zaladujZadania();
+            } catch (error) {
+                console.error('Błąd zmiany statusu:', error);
+            }
+        }
+
+        // Usuń zadanie
+        async function usunZadanie(id) {
+            if (!confirm('Czy na pewno chcesz usunąć to zadanie?')) return;
+
+            try {
+                await fetch(`${API_URL}/${id}`, {
+                    method: 'DELETE'
+                });
+                zaladujZadania();
+            } catch (error) {
+                console.error('Błąd usuwania zadania:', error);
+            }
+        }
+    </script>
+</body>
+</html>
